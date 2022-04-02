@@ -49,5 +49,6 @@
   },
   "devDependencies": {
     "miragejs": "^0.1.43"
-  }
+  },
+  "proxy": "https://apple-pie-31742.herokuapp.com"
 }

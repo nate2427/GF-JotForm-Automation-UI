@@ -13,9 +13,16 @@ import { makeServer } from './mock_server/server';
 import StickyHeadTable from './components/MUITable';
 import DataTable from './components/MUIDataGrid';
 
+// if (process.env.NODE_ENV === "development") {
+//   makeServer({ environment: "development" })
+// }
+
+let host = "https://apple-pie-31742.herokuapp.com"
+
 if (process.env.NODE_ENV === "development") {
-  makeServer({ environment: "development" })
+  host = "http://127.0.0.1:5000/"
 }
+
 
 const CardBackgroundContainer = ({ children, mtSize, cardHeight }) => {
   return (
@@ -72,7 +79,7 @@ export function GFDatePicker({ cardWidth, setCampaignTitles }) {
           {
             startDate && endDate && <Grid container sx={{ p: 2 }}>
               <Button onClick={() => {
-                axios.post('/api/v1/get-date-range', {
+                axios.post(`${host}/api/v1/get-date-range`, {
                   "start_date": startDate.toISOString().split('T')[0],
                   "end_date": endDate.toISOString().split('T')[0]
                 }).then(res => {
@@ -104,7 +111,7 @@ const CampaignTitles = ({ campaignTitles, setOrganizedSubmissions }) => {
       {campaignTitles.length > 0 &&
         <Grid item xs={12} sx={{ pt: 3 }}>
           <Button onClick={() => {
-            axios.post('/api/v1/get-forms-and-submissions', {
+            axios.post(`${host}/api/v1/get-forms-and-submissions`, {
               "start_date": "2022-01-01",
               "end_date": "2022-01-01"
             }).then(res => {
@@ -138,11 +145,11 @@ const OrganizedSubmissions = ({ organizedSubmissions, setDownloadLinks }) => {
       {organizedSubmissions['thrive'] !== undefined && <FormAndSubmissions title="Thrive Google Form Submissions" submissions={organizedSubmissions['thrive']} order={2} />}
       {organizedSubmissions['thrive'] !== undefined && <Grid item xs={12} sx={{ pt: 3 }}>
         <Button onClick={() => {
-          axios.post('/api/v1/get-download-links', {
+          axios.get(`${host}api/v1/get-download-links`, {
             "start_date": "2022-01-01",
             "end_date": "2022-01-01"
           }).then(res => {
-            setDownloadLinks(res.data)
+            setDownloadLinks(res.data['files'])
           })
         }} fullWidth={true} variant="contained" color="primary" size="small"> Create Download Links </Button>
       </Grid>}
@@ -167,16 +174,15 @@ const DownloadXLFiles = ({ downloadLinks }) => {
             return (
               <Grid item xs={12} sm={6} key={index}>
                 <Button style={{ height: '15vh' }} fullWidth={true} variant="contained" color="primary" size="small" onClick={() => {
-                  axios.get(`/api/v1/${link}`, {
+                  axios.get(`${host}/${link}`, {
                     "start_date": "",
                     "end_date": ""
                   }).then(res => {
-                    if (process.env.NODE_ENV === "development") {
-                      const a = document.createElement('a');
-                      a.href = `/Users/streetcodernate/Documents/au†oma†ions/UIs/gf-automation/src/mock_server/gf_google_leads.xlsx`
-                      a.download = res.data
-                      a.click();
-                    }
+                    const a = document.createElement('a');
+                    a.href = `${host}/${link}`;
+                    a.download = res.data
+                    a.click();
+
                   })
                 }}>
                   {link}

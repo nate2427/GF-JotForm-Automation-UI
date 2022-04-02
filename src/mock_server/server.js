@@ -6,7 +6,7 @@ export function makeServer({ environment = "test" } = {}) {
     let server = createServer({
         environment,
         routes() {
-            this.namespace = "api/v1";
+            this.namespace = "https://apple-pie-31742.herokuapp.com/api/v1";
             this.post("/get-date-range", () => {
                 return submission_titles_for_date_range
             })
