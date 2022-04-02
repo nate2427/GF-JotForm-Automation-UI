@@ -145,7 +145,7 @@ const OrganizedSubmissions = ({ organizedSubmissions, setDownloadLinks }) => {
       {organizedSubmissions['thrive'] !== undefined && <FormAndSubmissions title="Thrive Google Form Submissions" submissions={organizedSubmissions['thrive']} order={2} />}
       {organizedSubmissions['thrive'] !== undefined && <Grid item xs={12} sx={{ pt: 3 }}>
         <Button onClick={() => {
-          axios.get(`${host}api/v1/get-download-links`, {
+          axios.get(`${host}/api/v1/get-download-links`, {
             "start_date": "2022-01-01",
             "end_date": "2022-01-01"
           }).then(res => {
