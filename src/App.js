@@ -20,7 +20,7 @@ import DataTable from './components/MUIDataGrid';
 let host = "https://apple-pie-31742.herokuapp.com"
 
 if (process.env.NODE_ENV === "development") {
-  host = "http://127.0.0.1:5000/"
+  host = "http://127.0.0.1:5000"
 }
 
 
@@ -174,15 +174,11 @@ const DownloadXLFiles = ({ downloadLinks }) => {
             return (
               <Grid item xs={12} sm={6} key={index}>
                 <Button style={{ height: '15vh' }} fullWidth={true} variant="contained" color="primary" size="small" onClick={() => {
-                  axios.get(`${host}/${link}`, {
-                    "start_date": "",
-                    "end_date": ""
-                  }).then(res => {
+                  axios.get(`${host}/${link}`).then(res => {
                     const a = document.createElement('a');
                     a.href = `${host}/${link}`;
                     a.download = res.data
                     a.click();
-
                   })
                 }}>
                   {link}
