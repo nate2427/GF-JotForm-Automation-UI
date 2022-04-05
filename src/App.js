@@ -17,7 +17,7 @@ import DataTable from './components/MUIDataGrid';
 //   makeServer({ environment: "development" })
 // }
 
-let host = "https://apple-pie-31742.herokuapp.com"
+let host = "https://gf-jotform-automation-123.azurewebsites.net"
 
 if (process.env.NODE_ENV === "development") {
   host = "http://127.0.0.1:5000"
