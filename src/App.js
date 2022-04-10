@@ -5,17 +5,18 @@ import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import axios from 'axios';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Grid } from '@mui/material';
-// import { makeServer } from './mock_server/server';
+import { makeServer } from './mock_server/server';
 import StickyHeadTable from './components/MUITable';
 import DataTable from './components/MUIDataGrid';
 
-// if (process.env.NODE_ENV === "development") {
-//   makeServer({ environment: "development" })
-// }
+if (process.env.NODE_ENV === "development") {
+  makeServer({ environment: "development" })
+}
 
 let host = "https://gf-jotform-automation-123.azurewebsites.net"
 
@@ -27,7 +28,7 @@ if (process.env.NODE_ENV === "development") {
 const CardBackgroundContainer = ({ children, mtSize, cardHeight }) => {
   return (
     <Card sx={{ overflow: 'scroll', maxHeight: "70vh", borderRadius: "10px", height: cardHeight, mt: mtSize, border: "1px solid rgb(19, 47, 76)", backgroundColor: "rgb(0, 30, 60)", p: 1 }}>
-      <CardContent>
+      <CardContent sx={{ height: "100%" }}>
         {children}
       </CardContent>
     </Card>
@@ -35,7 +36,7 @@ const CardBackgroundContainer = ({ children, mtSize, cardHeight }) => {
 }
 
 
-export function GFDatePicker({ cardWidth, setCampaignTitles }) {
+export function GFDatePicker({ cardWidth, setCampaignTitles, setOrganizedSubmissions, setDownloadLinks, setIsLoadingTitles }) {
   const [startDate, setStartDate] = React.useState("");
   const [endDate, setEndDate] = React.useState("");
 
@@ -79,11 +80,16 @@ export function GFDatePicker({ cardWidth, setCampaignTitles }) {
           {
             startDate && endDate && <Grid container sx={{ p: 2 }}>
               <Button onClick={() => {
+                setCampaignTitles([])
+                setOrganizedSubmissions([])
+                setDownloadLinks([])
+                setIsLoadingTitles(true)
                 axios.post(`${host}/api/v1/get-date-range`, {
                   "start_date": startDate.toISOString().split('T')[0],
                   "end_date": endDate.toISOString().split('T')[0]
                 }).then(res => {
                   setCampaignTitles(res.data)
+                  setIsLoadingTitles(false)
                 })
               }} fullWidth={true} variant="contained" color="primary" size="small"> Find Campaigns For This Date Range </Button>
             </Grid>
@@ -96,10 +102,10 @@ export function GFDatePicker({ cardWidth, setCampaignTitles }) {
 }
 
 
-const CampaignTitles = ({ campaignTitles, setOrganizedSubmissions }) => {
+const CampaignTitles = ({ campaignTitles, setOrganizedSubmissions, setIsLoadingSubmissions, setDownloadLinks, isLoading }) => {
 
   return (
-    <Grid container>
+    <Grid container sx={{ height: "100%" }}>
       {campaignTitles.length > 0 &&
         <Grid item xs={12}>
           <Typography variant="h5" component="h2" sx={{ fontSize: 32, color: "white", pb: 2, textAlign: 'center' }}>
@@ -111,14 +117,19 @@ const CampaignTitles = ({ campaignTitles, setOrganizedSubmissions }) => {
       {campaignTitles.length > 0 &&
         <Grid item xs={12} sx={{ pt: 3 }}>
           <Button onClick={() => {
+            setIsLoadingSubmissions(true)
+            setOrganizedSubmissions([])
+            setDownloadLinks([])
             axios.post(`${host}/api/v1/get-forms-and-submissions`, {
               "start_date": "2022-01-01",
               "end_date": "2022-01-01"
             }).then(res => {
               setOrganizedSubmissions(res.data)
+              setIsLoadingSubmissions(false)
             })
           }} fullWidth={true} variant="contained" color="primary" size="small"> Organize Submissions For Forms </Button>
         </Grid>}
+      {campaignTitles.length === 0 && isLoading && <Grid container justifyContent={"center"} alignItems={"center"}> <Grid item xs={12} sx={{ textAlign: "center" }}> <CircularProgress size={100} /> </Grid> </Grid>}
     </Grid>
   )
 }
@@ -138,29 +149,33 @@ const FormAndSubmissions = ({ title, submissions, order }) => {
   )
 }
 
-const OrganizedSubmissions = ({ organizedSubmissions, setDownloadLinks }) => {
+const OrganizedSubmissions = ({ organizedSubmissions, setDownloadLinks, isLoadingSubmissions, setIsLoadingLinks }) => {
   return (
-    <Grid container>
+    <Grid sx={{ height: '100%' }} container>
       {organizedSubmissions['gf'] !== undefined && <FormAndSubmissions title="GF Google Form Submissions" submissions={organizedSubmissions['gf']} order={1} />}
       {organizedSubmissions['thrive'] !== undefined && <FormAndSubmissions title="Thrive Google Form Submissions" submissions={organizedSubmissions['thrive']} order={2} />}
       {organizedSubmissions['thrive'] !== undefined && <Grid item xs={12} sx={{ pt: 3 }}>
         <Button onClick={() => {
+          setIsLoadingLinks(true)
+          setDownloadLinks([])
           axios.get(`${host}/api/v1/get-download-links`, {
             "start_date": "2022-01-01",
             "end_date": "2022-01-01"
           }).then(res => {
             setDownloadLinks(res.data['files'])
+            setIsLoadingLinks(false)
           })
         }} fullWidth={true} variant="contained" color="primary" size="small"> Create Download Links </Button>
       </Grid>}
+      {organizedSubmissions['gf'] === undefined && isLoadingSubmissions && <Grid container justifyContent={"center"} alignItems={"center"}> <Grid item xs={12} sx={{ textAlign: "center" }}> <CircularProgress size={100} /> </Grid> </Grid>}
     </Grid>
   )
 }
 
-const DownloadXLFiles = ({ downloadLinks }) => {
+const DownloadXLFiles = ({ downloadLinks, isLoadingLinks }) => {
 
   return (
-    <Grid container>
+    <Grid sx={{ height: '100%' }} container>
       {downloadLinks.length > 0 &&
         <Grid item xs={12}>
           <Typography variant="h5" component="h2" sx={{ fontSize: 32, color: "white", pb: 2, textAlign: "center" }}>
@@ -188,6 +203,7 @@ const DownloadXLFiles = ({ downloadLinks }) => {
           })}
         </Grid>
       }
+      {downloadLinks.length === 0 && isLoadingLinks && <Grid container justifyContent={"center"} alignItems={"center"}> <Grid item xs={12} sx={{ textAlign: "center" }}> <CircularProgress size={100} /> </Grid> </Grid>}
     </Grid >
 
   )
@@ -202,24 +218,32 @@ function App() {
   const [campaignTitles, setCampaignTitles] = React.useState([]);
   const [organizedSubmissions, setOrganizedSubmissions] = React.useState({});
   const [downloadLinks, setDownloadLinks] = React.useState([]);
+  const [isLoadingTitles, setIsLoadingTitles] = React.useState(false);
+  const [isLoadingSubmissions, setIsLoadingSubmissions] = React.useState(false);
+  const [isLoadingLinks, setIsLoadingLinks] = React.useState(false);
+
 
   return (
     <Grid container={true} spacing={2} sx={{ p: 2, justifyContent: "center", minHeight: "", backgroundColor: "#0A1929" }} >
       <Grid item xs={12} sm={10} md={5} >
-        <GFDatePicker cardWidth={'30%'} setCampaignTitles={setCampaignTitles} />
+        <GFDatePicker cardWidth={'30%'} setCampaignTitles={setCampaignTitles} setOrganizedSubmissions={setOrganizedSubmissions}
+          setDownloadLinks={setDownloadLinks} setIsLoadingTitles={setIsLoadingTitles} />
         <CardBackgroundContainer cardHeight={'70vh'} mtSize={2}>
           <CampaignTitles
             campaignTitles={campaignTitles}
             setOrganizedSubmissions={setOrganizedSubmissions}
+            setIsLoadingSubmissions={setIsLoadingSubmissions}
+            setDownloadLinks={setDownloadLinks}
+            isLoading={isLoadingTitles}
           />
         </CardBackgroundContainer>
       </Grid>
       <Grid item xs={12} sm={10} md={7}>
         <CardBackgroundContainer mtSize={0} cardHeight={'70vh'}>
-          <OrganizedSubmissions organizedSubmissions={organizedSubmissions} setDownloadLinks={setDownloadLinks} />
+          <OrganizedSubmissions organizedSubmissions={organizedSubmissions} setDownloadLinks={setDownloadLinks} isLoadingSubmissions={isLoadingSubmissions} setIsLoadingLinks={setIsLoadingLinks} />
         </CardBackgroundContainer>
         <CardBackgroundContainer mtSize={2} cardHeight={'30vh'} >
-          <DownloadXLFiles downloadLinks={downloadLinks} />
+          <DownloadXLFiles downloadLinks={downloadLinks} isLoadingLinks={isLoadingLinks} />
         </CardBackgroundContainer>
       </Grid>
     </Grid>
