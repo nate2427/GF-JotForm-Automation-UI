@@ -10,13 +10,13 @@ import axios from 'axios';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Grid } from '@mui/material';
-import { makeServer } from './mock_server/server';
+// import { makeServer } from './mock_server/server';
 import StickyHeadTable from './components/MUITable';
 import DataTable from './components/MUIDataGrid';
 
-if (process.env.NODE_ENV === "development") {
-  makeServer({ environment: "development" })
-}
+// if (process.env.NODE_ENV === "development") {
+//   makeServer({ environment: "development" })
+// }
 
 let host = "https://gf-jotform-automation-123.azurewebsites.net"
 
