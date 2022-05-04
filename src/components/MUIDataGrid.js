@@ -9,40 +9,17 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Checkbox from '@mui/material/Checkbox';
 
-export default function EnhancedTable({ campaignTitles }) {
-    const [selected, setSelected] = React.useState([]);
+export default function EnhancedTable({ campaignTitles, setCampaignTitles }) {
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(campaignTitles.length);
 
 
-
-    React.useEffect(() => {
-        const handleSelectAllClick = () => {
-            const newSelecteds = campaignTitles.map((n) => n.title);
-            setSelected(newSelecteds);
-            return;
-        };
-        handleSelectAllClick();
-    }, [campaignTitles]);
-
-    const handleClick = (event, name) => {
-        const selectedIndex = selected.indexOf(name);
-        let newSelected = [];
-
-        if (selectedIndex === -1) {
-            newSelected = newSelected.concat(selected, name);
-        } else if (selectedIndex === 0) {
-            newSelected = newSelected.concat(selected.slice(1));
-        } else if (selectedIndex === selected.length - 1) {
-            newSelected = newSelected.concat(selected.slice(0, -1));
-        } else if (selectedIndex > 0) {
-            newSelected = newSelected.concat(
-                selected.slice(0, selectedIndex),
-                selected.slice(selectedIndex + 1),
-            );
-        }
-
-        setSelected(newSelected);
+    const handleClick = (event, id) => {
+        const selectedTitle = campaignTitles.find(item => item.id === id);
+        const selectedIndex = campaignTitles.indexOf(selectedTitle);
+        const newSelected = [...campaignTitles];
+        newSelected[selectedIndex].selected = !selectedTitle.selected;
+        setCampaignTitles(newSelected);
     };
 
     const handleChangePage = (event, newPage) => {
@@ -54,7 +31,7 @@ export default function EnhancedTable({ campaignTitles }) {
         setPage(0);
     };
 
-    const isSelected = (name) => selected.indexOf(name) !== -1;
+    const isSelected = (id) => campaignTitles.find(campaign => campaign.id === id).selected;
 
     // Avoid a layout jump when reaching the last page with empty rows.
     const emptyRows =
@@ -74,13 +51,13 @@ export default function EnhancedTable({ campaignTitles }) {
                  rows.slice().sort(getComparator(order, orderBy)) */}
                             {campaignTitles.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                 .map((campaign, index) => {
-                                    const isItemSelected = isSelected(campaign.title);
+                                    const isItemSelected = isSelected(campaign.id);
                                     const labelId = `enhanced-table-checkbox-${index}`;
 
                                     return (
                                         <TableRow
                                             hover
-                                            onClick={(event) => handleClick(event, campaign.title)}
+                                            onClick={(event) => handleClick(event, campaign.id)}
                                             role="checkbox"
                                             aria-checked={isItemSelected}
                                             tabIndex={-1}

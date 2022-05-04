@@ -88,7 +88,11 @@ export function GFDatePicker({ cardWidth, setCampaignTitles, setOrganizedSubmiss
                   "start_date": startDate.toISOString().split('T')[0],
                   "end_date": endDate.toISOString().split('T')[0]
                 }).then(res => {
-                  setCampaignTitles(res.data)
+                  const newSelecteds = res.data.map((n) => {
+                    n['selected'] = true
+                    return n
+                  });
+                  setCampaignTitles(newSelecteds)
                   setIsLoadingTitles(false)
                 })
               }} fullWidth={true} variant="contained" color="primary" size="small"> Find Campaigns For This Date Range </Button>
@@ -102,7 +106,7 @@ export function GFDatePicker({ cardWidth, setCampaignTitles, setOrganizedSubmiss
 }
 
 
-const CampaignTitles = ({ campaignTitles, setOrganizedSubmissions, setIsLoadingSubmissions, setDownloadLinks, isLoading }) => {
+const CampaignTitles = ({ campaignTitles, setCampaignTitles, setOrganizedSubmissions, setIsLoadingSubmissions, setDownloadLinks, isLoading }) => {
 
   return (
     <Grid container sx={{ height: "100%" }}>
@@ -113,16 +117,17 @@ const CampaignTitles = ({ campaignTitles, setOrganizedSubmissions, setIsLoadingS
           </Typography>
         </Grid>
       }
-      {campaignTitles.length > 0 && <DataTable campaignTitles={campaignTitles} />}
+      {campaignTitles.length > 0 && <DataTable campaignTitles={campaignTitles} setCampaignTitles={setCampaignTitles} />}
       {campaignTitles.length > 0 &&
         <Grid item xs={12} sx={{ pt: 3 }}>
           <Button onClick={() => {
             setIsLoadingSubmissions(true)
             setOrganizedSubmissions([])
             setDownloadLinks([])
+            // get all of the selected titles
+            const selectedTitles = campaignTitles.filter((n) => n.selected === true)
             axios.post(`${host}/api/v1/get-forms-and-submissions`, {
-              "start_date": "2022-01-01",
-              "end_date": "2022-01-01"
+              titles: selectedTitles
             }).then(res => {
               setOrganizedSubmissions(res.data)
               setIsLoadingSubmissions(false)
@@ -231,6 +236,7 @@ function App() {
         <CardBackgroundContainer cardHeight={'70vh'} mtSize={2}>
           <CampaignTitles
             campaignTitles={campaignTitles}
+            setCampaignTitles={setCampaignTitles}
             setOrganizedSubmissions={setOrganizedSubmissions}
             setIsLoadingSubmissions={setIsLoadingSubmissions}
             setDownloadLinks={setDownloadLinks}
